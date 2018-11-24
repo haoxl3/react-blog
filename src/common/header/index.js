@@ -20,20 +20,31 @@ import {
 
 class Header extends Component{
     getListArea() {
-        const {focused, list} = this.props
-        if(focused){
+        const {focused, list,totalPage, mouseIn, page, handleMouseEnter, handleMouseLeave, handleChangePage} = this.props
+        //list为immutable对象，不能直接用'.'，所以需要转为JS对象
+        const newList = list.toJS();
+        const pageList = [];
+
+        //防止第一次newList为undefined导致的key报错
+        if(newList.length){
+            for(let i=(page-1)*10;i<page*10;i++){
+                pageList.push(
+                    <SearchInfoItem key={newList[i]}>{newList[i]}</SearchInfoItem>
+                )
+            }
+        }
+        if(focused || mouseIn){
             return (
-                <SearchInfo>
+                <SearchInfo 
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
                     <SearchInfoTitle>
                         热门搜索
-                        <SearchInfoSwitch>换一批</SearchInfoSwitch>
+                        <SearchInfoSwitch onClick={()=>handleChangePage(page,totalPage)}>换一批</SearchInfoSwitch>
                     </SearchInfoTitle>
                     <SearchInfoList>
-                        {
-                            list.map((item)=>{
-                                return <SearchInfoItem key={item}>{item}</SearchInfoItem>
-                            })
-                        }   
+                        {pageList}   
                     </SearchInfoList>
                 </SearchInfo>
             )
@@ -82,17 +93,16 @@ class Header extends Component{
 }
 //连接store和页面中的props，参数state为store中所有数据
 const mapStateToProps = (state) => {
-    let list = state.getIn(['header','list'])
-    console.log('******')
-    console.log(list)
-    console.log(Object.prototype.toString(list))
     return {
         //将store中的focused映射到props上，名字也叫focused。get为immutable的
         //获取state中的数据方法 
         focused: state.get('header').get('focused'),
         // 此方法与上面结果相同，都是取header里的focused
         // focused: state.getIn(['header','focused'])
-        list: state.getIn(['header','list'])
+        list: state.getIn(['header','list']),
+        page: state.getIn(['header', 'page']),
+        mouseIn: state.getIn(['header', 'mouseIn']),
+        totalPage: state.getIn(['header', 'totalPage'])
     }
 }
 //组件修改store时需要将方法写这里
@@ -105,6 +115,19 @@ const mapDispathToProps = (dispatch) => {
         },
         handleInputBlur() {
             dispatch(actionCreators.searchBlur())
+        },
+        handleMouseEnter() {
+            dispatch(actionCreators.mouseEnter())
+        },
+        handleMouseLeave() {
+            dispatch(actionCreators.mouseLeave())
+        },
+        handleChangePage(page,totalPage) {
+            if(page < totalPage){
+                dispatch(actionCreators.changePage(page + 1))
+            }else{
+                dispatch(actionCreators.changePage(1))
+            }
         }
     }
 }
