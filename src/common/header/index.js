@@ -51,8 +51,11 @@ const Header = (props) => {
 //连接store和页面中的props，参数state为store中所有数据
 const mapStateToProps = (state) => {
     return {
-        //将store中的focused映射到props上，名字也叫focused
-        focused: state.header.focused
+        //将store中的focused映射到props上，名字也叫focused。get为immutable的
+        //获取state中的数据方法 
+        focused: state.get('header').get('focused')
+        // 此方法与上面结果相同，都是取header里的focused
+        // focused: state.getIn(['header','focused'])
     }
 }
 //组件修改store时需要将方法写这里
