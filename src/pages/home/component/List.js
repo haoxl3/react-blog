@@ -1,16 +1,17 @@
 import React, {Component} from 'react';
-import {ListItem,ListInfo} from '../style';
+import {ListItem,ListInfo,LoadMore} from '../style';
 import {connect} from 'react-redux';
+import {actionCreators} from '../store';
 
 class List extends Component{
     render() {
-        const {list} = this.props;
+        const {list,getMoreList,page} = this.props;
         return (
             <div>
                 {
-                    list.map((item)=>{
+                    list.map((item,index)=>{
                         return(
-                            <ListItem key={item.get('id')}>
+                            <ListItem key={index}>
                                 <img 
                                     className="pic" 
                                     src={item.get('imgUrl')}
@@ -24,12 +25,20 @@ class List extends Component{
                         )
                     })
                 }
+                <LoadMore onClick={()=>getMoreList(page)}>更多文字</LoadMore>
             </div>
         )
     }
 }
 
 const mapState = (state) => ({
-    list: state.getIn(['home','articleList'])
+    list: state.getIn(['home','articleList']),
+    page: state.getIn(['home','articlePage'])
 });
-export default connect(mapState,null)(List);
+const mayDispatch = (dispatch) => ({
+    getMoreList(page) {
+        //通过actionCreators创建action后，再通过dispatch派发出去
+        dispatch(actionCreators.getMoreList(page));
+    }
+})
+export default connect(mapState,mayDispatch)(List);
